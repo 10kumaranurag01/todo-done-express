@@ -206,11 +206,3 @@ To deploy the backend:
 1. Set the environment variables (`MONGO_URI`, `JWT_SECRET`) on your hosting provider (e.g., Heroku, Vercel).
 2. Deploy the app on your preferred platform.
 3. Ensure the frontend is correctly pointing to the deployed API.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
----
-
-This README provides a detailed overview of your project and will help others understand how to install, run, and contribute to it.
