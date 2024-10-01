@@ -49,4 +49,34 @@ const loginUser = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser };
+const forgotPassword = async (req, res)=>{
+    
+    try {
+        const {username, email, password} = req.body;
+    
+        registerSchema.parse(req.body); 
+        const user = await User.findOne({ username });
+    
+        if(!user){
+            res.status(404).json({ message: 'Invalid credentials' });
+        }
+        
+        if(email !== user.email){
+            res.status(401).json({ message: 'Invalid credentials' });
+        }
+
+        user.password = password;
+        await user.save();
+
+        res.status(201).json({
+            username: user.username,
+            token: generateToken(user),
+        });
+
+    } catch (error) {
+        res.status(400).json({ message: error.errors || 'Invalid data' });
+    }
+
+}
+
+module.exports = { registerUser, loginUser, forgotPassword };
