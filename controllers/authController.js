@@ -74,7 +74,7 @@ const forgotPassword = async (req, res)=>{
         });
 
     } catch (error) {
-        res.status(400).json({ message: error.errors || 'Invalid data' });
+        res.status(400).json({ message: error.errors || 'Invalid data' }); 
     }
 
 }
