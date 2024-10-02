@@ -49,14 +49,14 @@ Before starting, ensure you have:
 1. **Clone the repository:**
 
    ```bash
-  git clone https://github.com/10kumaranurag01/todo-done-express.git
-  cd todo-done-express
+    git clone https://github.com/10kumaranurag01/todo-done-express.git
+    cd todo-done-express
    ```
 
 2. **Install dependencies:**
 
    ```bash
-   npm install
+    npm install
    ```
 
 3. **Create a `.env` file:**
