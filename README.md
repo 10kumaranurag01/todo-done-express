@@ -15,7 +15,7 @@ This is the backend API for a **Task Management Dashboard** that includes user a
 ## Project Structure
 
 ```
-task-manager-backend/
+todo-done-backend/
 ├── config/
 │   └── db.js            # Database connection setup
 ├── controllers/
