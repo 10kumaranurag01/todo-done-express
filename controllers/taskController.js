@@ -4,9 +4,9 @@ const { taskSchema } = require('../utils/validate');
 const getTasks = async (req, res) => {
     try {
         const tasks = await Task.find({ userId: req.user._id });
-        res.json(tasks);
+        return res.json(tasks);
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error' });
     }
 };
 
@@ -15,9 +15,9 @@ const createTask = async (req, res) => {
         taskSchema.parse(req.body);  // Zod validation
         const task = new Task({ ...req.body, userId: req.user._id });
         await task.save();
-        res.status(201).json(task);
+        return res.status(201).json(task);
     } catch (error) {
-        res.status(400).json({ message: error.errors || 'Invalid data' });
+        return res.status(400).json({ message: error.errors || 'Invalid data' });
     }
 };
 
@@ -32,10 +32,9 @@ const updateTask = async (req, res) => {
 
         Object.assign(task, req.body);
         await task.save();
-        res.json(task);
+        return res.json(task);
     } catch (error) {
-        consoe
-        res.status(400).json({ message: error.errors || 'Invalid data' });
+        return res.status(400).json({ message: error.errors || 'Invalid data' });
     }
 };
 
@@ -48,9 +47,9 @@ const deleteTask = async (req, res) => {
         }
 
         await task.deleteOne();
-        res.json({ message: 'Task removed' });
+        return res.json({ message: 'Task removed' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        return res.status(500).json({ message: 'Server error' });
     }
 };
 
