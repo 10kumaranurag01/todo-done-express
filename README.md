@@ -1,4 +1,4 @@
-# Task Management Dashboard - Backend
+# To-Do Done Backend
 
 This is the backend API for a **Task Management Dashboard** that includes user authentication, task management (CRUD operations), and a Kanban board feature. The backend is built using **Express**, connected to a **MongoDB** database, and uses **JWT** for user authentication. The frontend is built with **Next.js**, and the backend is designed to integrate seamlessly with it.
 
@@ -49,8 +49,8 @@ Before starting, ensure you have:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/your-username/task-manager-backend.git
-   cd task-manager-backend
+  git clone https://github.com/10kumaranurag01/todo-done-express.git
+  cd todo-done-express
    ```
 
 2. **Install dependencies:**
