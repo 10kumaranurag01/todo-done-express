@@ -1,62 +1,56 @@
-const Task = require("../models/Task");
-const { taskSchema } = require("../validators/validate");
-const asyncHandler = require("../utils/asyncHandler");
-const validateData = require("../utils/validateData");
+const Task = require('../models/Task');
+const { taskSchema } = require('../utils/validate');
 
-const getTasks = asyncHandler(async (req, res) => {
-  const tasks = await Task.find({ userId: req.user._id });
-  return res
-    .status(200)
-    .json(tasks);
-});
-
-const createTask = asyncHandler(async (req, res) => {
-  const { valid, errors } = validateData(taskSchema, req.body);
-
-  if (!valid) {
-    return res.status(400).json({ message: errors });
+const getTasks = async (req, res) => {
+  try {
+    const tasks = await Task.find({ userId: req.user._id });
+    return res.json(tasks);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
   }
+};
 
-  const task = new Task({ ...req.body, userId: req.user._id });
-  await task.save();
-  return res.status(201).json(task);
-});
-
-const updateTask = asyncHandler(async (req, res) => {
-  console.log("jjj")
-  const { valid, errors } = validateData(taskSchema, req.body);
-
-  if (!valid) {
-    return res.status(400).json({ message: errors });
+const createTask = async (req, res) => {
+  try {
+    taskSchema.parse(req.body);  // Zod validation
+    const task = new Task({ ...req.body, userId: req.user._id });
+    await task.save();
+    return res.status(201).json(task);
+  } catch (error) {
+    return res.status(400).json({ message: error.errors || 'Invalid data' });
   }
+};
 
-  const task = await Task.findById(req.params.id);
+const updateTask = async (req, res) => {
+  try {
+    taskSchema.parse(req.body);  // Zod validation
+    const task = await Task.findById(req.params.id);
 
-  if (!task || task.userId.toString() !== req.user._id.toString()) {
-    return res.status(404).json({ message: "Task not found" });
+    if (!task || task.userId.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    Object.assign(task, req.body);
+    await task.save();
+    return res.json(task);
+  } catch (error) {
+    return res.status(400).json({ message: error.errors || 'Invalid data' });
   }
+};
 
-  const updatedTask = {
-    title: req.body.title,
-    description: req.body.description,
-    status: req.body.status,
-    priority: req.body.priority,
-    dueDate: req.body.dueDate,
-    userId: task.userId, // keep the original userId
-  };
+const deleteTask = async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
 
-  await Task.findByIdAndUpdate(req.params.id, updatedTask, { new: true });
-  return res.status(200).json(updatedTask);
-});
+    if (!task || task.userId.toString() !== req.user._id.toString()) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
 
-const deleteTask = asyncHandler(async (req, res) => {
-  const task = await Task.findByIdAndDelete(req.params.id);
-
-  if (!task || task.userId.toString() !== req.user._id.toString()) {
-    return res.status(404).json({ message: "Task not found" });
+    await task.deleteOne();
+    return res.json({ message: 'Task removed' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
   }
-
-  returnres.status(200).json({ message: "Task removed" });
-});
+};
 
 module.exports = { getTasks, createTask, updateTask, deleteTask };
