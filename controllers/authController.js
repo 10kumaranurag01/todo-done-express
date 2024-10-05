@@ -1,82 +1,83 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const { registerSchema, loginSchema } = require('../utils/validate');
+const User = require("../models/User");
+const { registerSchema, loginSchema } = require("../validators/validate");
+const asyncHandler = require("../utils/asyncHandler");
+const generateToken = require("../utils/generateToken");
+const validateData = require("../utils/validateData");
+const isEmailMatch = require("../utils/isEmail");
+const updateUserPassword = require("../utils/updateUserPassword");
 
-const generateToken = (user) => {
-    return jwt.sign({ userId: user._id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '30d' });
-};
+const registerUser = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body;
 
-const registerUser = async (req, res) => {
-    const { username, email, password } = req.body;
+  const { valid, errors } = validateData(registerSchema, req.body);
 
-    try {
-        registerSchema.parse(req.body);  // Zod validation
-        const userExists = await User.findOne({
-            $or: [{ email }, { username }]
-        });
+  if (!valid) {
+    return res.status(400).json({ message: errors });
+  }
 
-        if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
+  const userExists = await User.findOne({
+    $or: [{ email }, { username }],
+  });
 
-        const user = await User.create({ username, email, password });
-        return res.status(201).json({
-            username: user.username,
-            token: generateToken(user),
-        });
-    } catch (error) {
-        return res.status(400).json({ message: error.errors || 'Invalid data' });
-    }
-};
+  if (userExists) {
+    return res.status(400).json({ message: "User already exists" });
+  }
 
-const loginUser = async (req, res) => {
-    const { username, password } = req.body;
+  const user = await User.create({ username, email, password });
 
-    try {
-        loginSchema.parse(req.body);  // Zod validation
-        const user = await User.findOne({ username });
+  if (!user) {
+    return res
+      .status(500)
+      .json({ message: "Error occurred while creating user" });
+  }
 
-        if (user && (await user.matchPassword(password))) {
-            return res.json({
-                username: user.username,
-                token: generateToken(user),
-            });
-        } else {
-            return res.status(401).json({ message: 'Invalid username or password' });
-        }
-    } catch (error) {
-        return res.status(400).json({ message: error.errors || 'Invalid data' });
-    }
-};
+  return res.status(201).json({
+    username: user?.username,
+    token: generateToken(user),
+  });
+});
 
-const forgotPassword = async (req, res)=>{
-    
-    try {
-        const {username, email, password} = req.body;
-    
-        registerSchema.parse(req.body); 
-        const user = await User.findOne({ username });
-    
-        if(!user){
-            return res.status(404).json({ message: 'Invalid credentials' });
-        }
-        
-        if(email !== user.email){
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
+const loginUser = asyncHandler(async (req, res) => {
+  const { username, password } = req.body;
 
-        user.password = password;
-        await user.save();
+  const { valid, errors } = validateData(loginSchema, req.body);
 
-        return res.status(201).json({
-            username: user.username,
-            token: generateToken(user),
-        });
+  if (!valid) {
+    return res.status(400).json({ message: errors });
+  }
 
-    } catch (error) {
-        return res.status(400).json({ message: error.errors || 'Invalid data' }); 
-    }
+  const user = await User.findOne({ username });
 
-}
+  if (user && (await user.matchPassword(password))) {
+    return res.json({
+      username: user?.username,
+      token: generateToken(user),
+    });
+  }
+
+  return res.status(401).json({ message: "Invalid username or password" });
+});
+
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body;
+
+  const { valid, errors } = validateData(registerSchema, req.body);
+  if (!valid) {
+    return res.status(400).json({ message: errors });
+  }
+
+  // Find user and validate credentials
+  const user = await User.findOne({ username });
+  if (!user || !isEmailMatch(user.email, email)) {
+    return res.status(401).json({ message: "Invalid credentials" });
+  }
+
+  await updateUserPassword(user, password);
+
+  return res.status(200).json({
+    username: user.username,
+    token: generateToken(user),
+  });
+});
 
 module.exports = { registerUser, loginUser, forgotPassword };
