@@ -23,6 +23,7 @@ const createTask = asyncHandler(async (req, res) => {
 });
 
 const updateTask = asyncHandler(async (req, res) => {
+  console.log("jjj")
   const { valid, errors } = validateData(taskSchema, req.body);
 
   if (!valid) {
